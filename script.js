@@ -18,6 +18,36 @@ class BookkeepingApp {
         this.renderReceipts();
     }
 
+    addTouchEvents() {
+        // Verbesserte Touch-Unterstützung für mobile Geräte
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.98)';
+            });
+            button.addEventListener('touchend', function() {
+                this.style.transform = '';
+            });
+        });
+
+        // Tap-to-focus für Input-Felder
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('touchstart', function() {
+                this.style.borderColor = 'var(--primary-color)';
+            });
+        });
+
+        // Haptic Feedback (wenn verfügbar)
+        if ('vibrate' in navigator) {
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    navigator.vibrate(50);
+                });
+            });
+        }
+    }
+
     loadDefaultAccounts() {
         if (this.accounts.length === 0) {
             const defaultAccounts = [
@@ -84,7 +114,15 @@ class BookkeepingApp {
 
         // Set default date and month
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('calendar-month').value = new Date().toISOString().slice(0, 7);
+        
+        // Set calendar month with error handling
+        const calendarMonth = document.getElementById('calendar-month');
+        if (calendarMonth) {
+            calendarMonth.value = new Date().toISOString().slice(0, 7);
+        }
+        
+        // Add touch-friendly events for mobile
+        this.addTouchEvents();
     }
 
     addAccount() {
@@ -92,7 +130,7 @@ class BookkeepingApp {
         const type = document.getElementById('account-type').value;
 
         if (this.accounts.find(acc => acc.name === name)) {
-            alert('Konto existiert bereits!');
+            this.showNotification('⚠️ Konto existiert bereits!', 'error');
             return;
         }
 
@@ -103,6 +141,8 @@ class BookkeepingApp {
         this.saveData();
         
         document.getElementById('account-form').reset();
+        
+        this.showNotification('✅ Konto erfolgreich hinzugefügt!', 'success');
     }
 
     addTransaction() {
@@ -114,7 +154,7 @@ class BookkeepingApp {
         const notes = document.getElementById('notes').value;
 
         if (debitAccount === creditAccount) {
-            alert('Soll- und Haben-Konto müssen unterschiedlich sein!');
+            this.showNotification('⚠️ Soll- und Haben-Konto müssen unterschiedlich sein!', 'error');
             return;
         }
 
@@ -136,6 +176,8 @@ class BookkeepingApp {
         
         document.getElementById('transaction-form').reset();
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        
+        this.showNotification('✅ Transaktion erfolgreich hinzugefügt!', 'success');
     }
 
     updateAccountDropdowns() {
@@ -353,7 +395,7 @@ class BookkeepingApp {
         const file = fileInput.files[0];
         
         if (!file) {
-            alert('Bitte wählen Sie ein Bild aus');
+            this.showNotification('📷 Bitte wählen Sie ein Bild aus', 'error');
             return;
         }
 
@@ -465,7 +507,7 @@ class BookkeepingApp {
         document.getElementById('receipt-preview').style.display = 'none';
         document.getElementById('receipt-transaction-form').style.display = 'none';
         
-        alert('Beleg gespeichert und Transaktion erstellt!');
+        this.showNotification('✅ Beleg gespeichert und Transaktion erstellt!', 'success');
     }
 
     renderReceipts() {
@@ -486,6 +528,106 @@ class BookkeepingApp {
             `;
             gallery.appendChild(receiptItem);
         });
+    }
+
+    showNotification(message, type = 'info') {
+        // Moderne Toast-Benachrichtigung
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span>${message}</span>
+                <button class="notification-close">&times;</button>
+            </div>
+        `;
+        
+        // Notification Styles hinzufügen falls nicht vorhanden
+        if (!document.querySelector('#notification-styles')) {
+            const styles = document.createElement('style');
+            styles.id = 'notification-styles';
+            styles.textContent = `
+                .notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 12px;
+                    padding: 16px 20px;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+                    z-index: 1000;
+                    transform: translateX(400px);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    max-width: 400px;
+                    border-left: 4px solid var(--primary-color);
+                }
+                .notification.show {
+                    transform: translateX(0);
+                }
+                .notification-success {
+                    border-left-color: var(--success-color);
+                }
+                .notification-error {
+                    border-left-color: var(--danger-color);
+                }
+                .notification-content {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 15px;
+                }
+                .notification-close {
+                    background: none;
+                    border: none;
+                    font-size: 20px;
+                    cursor: pointer;
+                    color: var(--text-secondary);
+                    padding: 0;
+                    line-height: 1;
+                }
+                .notification-close:hover {
+                    color: var(--text-primary);
+                }
+                @media (max-width: 768px) {
+                    .notification {
+                        top: 10px;
+                        right: 10px;
+                        left: 10px;
+                        max-width: none;
+                        transform: translateY(-100px);
+                    }
+                    .notification.show {
+                        transform: translateY(0);
+                    }
+                }
+            `;
+            document.head.appendChild(styles);
+        }
+        
+        document.body.appendChild(notification);
+        
+        // Animation starten
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        // Close Button Event
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        });
+        
+        // Auto-remove nach 4 Sekunden
+        setTimeout(() => {
+            if (notification.classList.contains('show')) {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 4000);
+        
+        // Haptic Feedback
+        if ('vibrate' in navigator) {
+            navigator.vibrate(type === 'success' ? [50, 50, 50] : [100]);
+        }
     }
 }
 
