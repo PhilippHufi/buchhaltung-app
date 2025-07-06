@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="600" fill="white" stroke="black" stroke-width="2"/>
+  
+  <!-- Header -->
+  <text x="20" y="30" font-family="Arial" font-size="20" font-weight="bold">TESTLADEN GMBH</text>
+  <text x="20" y="50" font-family="Arial" font-size="14">Musterstraße 123</text>
+  <text x="20" y="70" font-family="Arial" font-size="14">12345 Musterstadt</text>
+  <text x="20" y="90" font-family="Arial" font-size="14">Tel: 0123-456789</text>
+  
+  <line x1="20" y1="110" x2="380" y2="110" stroke="black" stroke-width="2"/>
+  
+  <!-- Receipt Details -->
+  <text x="20" y="135" font-family="Arial" font-size="18" font-weight="bold">KASSENBON</text>
+  <text x="20" y="160" font-family="Arial" font-size="14">Datum: 06.07.2025</text>
+  <text x="20" y="180" font-family="Arial" font-size="14">Zeit: 14:30</text>
+  
+  <line x1="20" y1="200" x2="380" y2="200" stroke="black" stroke-width="1"/>
+  
+  <!-- Items -->
+  <text x="20" y="225" font-family="Arial" font-size="14">Büromaterial</text>
+  <text x="300" y="225" font-family="Arial" font-size="14">45,67 EUR</text>
+  
+  <text x="20" y="245" font-family="Arial" font-size="14">Ordner A4</text>
+  <text x="300" y="245" font-family="Arial" font-size="14">12,99 EUR</text>
+  
+  <text x="20" y="265" font-family="Arial" font-size="14">Stifte Set</text>
+  <text x="300" y="265" font-family="Arial" font-size="14">8,50 EUR</text>
+  
+  <line x1="20" y1="285" x2="380" y2="285" stroke="black" stroke-width="1"/>
+  
+  <!-- Total -->
+  <text x="20" y="310" font-family="Arial" font-size="16" font-weight="bold">SUMME:</text>
+  <text x="280" y="310" font-family="Arial" font-size="16" font-weight="bold">67,16 EUR</text>
+  
+  <text x="20" y="335" font-family="Arial" font-size="14">19% MwSt:</text>
+  <text x="300" y="335" font-family="Arial" font-size="14">10,74 EUR</text>
+  
+  <line x1="20" y1="355" x2="380" y2="355" stroke="black" stroke-width="2"/>
+  
+  <!-- Payment -->
+  <text x="20" y="380" font-family="Arial" font-size="14">Bar bezahlt:</text>
+  <text x="280" y="380" font-family="Arial" font-size="14">70,00 EUR</text>
+  
+  <text x="20" y="400" font-family="Arial" font-size="14">Rückgeld:</text>
+  <text x="300" y="400" font-family="Arial" font-size="14">2,84 EUR</text>
+  
+  <!-- Footer -->
+  <text x="20" y="450" font-family="Arial" font-size="14">Vielen Dank für Ihren Einkauf!</text>
+  <text x="20" y="480" font-family="Arial" font-size="12">Beleg-Nr: 2025-001234</text>
+</svg>

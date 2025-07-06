@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Buchhaltung App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Buchhaltung">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+</head>
+<body>
+    <div class="container">
+        <h1>Buchhaltung App</h1>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('transactions')">Transaktionen</button>
+            <button class="tab-button" onclick="showTab('receipts')">Rechnungen</button>
+            <button class="tab-button" onclick="showTab('accounts')">Konten</button>
+            <button class="tab-button" onclick="showTab('balance')">Bilanz</button>
+        </div>
+
+        <div id="transactions" class="tab-content active">
+            <h2>Neue Transaktion</h2>
+            <form id="transaction-form">
+                <div class="form-group">
+                    <label>Datum:</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label>Beschreibung:</label>
+                    <input type="text" id="description" required>
+                </div>
+                <div class="form-group">
+                    <label>Soll-Konto:</label>
+                    <select id="debit-account" required>
+                        <option value="">Konto auswählen</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Haben-Konto:</label>
+                    <select id="credit-account" required>
+                        <option value="">Konto auswählen</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Betrag (€):</label>
+                    <input type="number" id="amount" step="0.01" required>
+                </div>
+                <button type="submit">Transaktion hinzufügen</button>
+            </form>
+
+            <h2>Transaktionen</h2>
+            <table id="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Beschreibung</th>
+                        <th>Soll</th>
+                        <th>Haben</th>
+                        <th>Betrag</th>
+                    </tr>
+                </thead>
+                <tbody id="transactions-tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <div id="receipts" class="tab-content">
+            <h2>Rechnung fotografieren</h2>
+            <form id="receipt-form">
+                <div class="form-group">
+                    <label>Rechnung fotografieren oder hochladen:</label>
+                    <input type="file" id="receipt-image" accept="image/*" capture="camera" required>
+                </div>
+                <button type="submit">Rechnung verarbeiten</button>
+            </form>
+            
+            <div id="receipt-preview" style="display: none;">
+                <h3>Vorschau</h3>
+                <img id="preview-image" style="max-width: 100%; max-height: 300px;">
+                <div id="extracted-data"></div>
+            </div>
+
+            <div id="receipt-transaction-form" style="display: none;">
+                <h3>Transaktion aus Rechnung</h3>
+                <form id="receipt-to-transaction-form">
+                    <div class="form-group">
+                        <label>Datum:</label>
+                        <input type="date" id="receipt-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Beschreibung:</label>
+                        <input type="text" id="receipt-description" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Betrag (€):</label>
+                        <input type="number" id="receipt-amount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategorie:</label>
+                        <select id="receipt-category" required>
+                            <option value="">Kategorie auswählen</option>
+                            <option value="Büroaufwand">Büroaufwand</option>
+                            <option value="Mietaufwand">Mietaufwand</option>
+                            <option value="Reisekosten">Reisekosten</option>
+                            <option value="Bewirtung">Bewirtung</option>
+                        </select>
+                    </div>
+                    <button type="submit">Transaktion erstellen</button>
+                </form>
+            </div>
+
+            <h2>Gespeicherte Rechnungen</h2>
+            <div id="receipts-gallery"></div>
+        </div>
+
+        <div id="accounts" class="tab-content">
+            <h2>Neues Konto</h2>
+            <form id="account-form">
+                <div class="form-group">
+                    <label>Kontoname:</label>
+                    <input type="text" id="account-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Kontotyp:</label>
+                    <select id="account-type" required>
+                        <option value="Aktiva">Aktiva</option>
+                        <option value="Passiva">Passiva</option>
+                        <option value="Eigenkapital">Eigenkapital</option>
+                        <option value="Erlöse">Erlöse</option>
+                        <option value="Aufwendungen">Aufwendungen</option>
+                    </select>
+                </div>
+                <button type="submit">Konto hinzufügen</button>
+            </form>
+
+            <h2>Konten</h2>
+            <table id="accounts-table">
+                <thead>
+                    <tr>
+                        <th>Kontoname</th>
+                        <th>Typ</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody id="accounts-tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <div id="balance" class="tab-content">
+            <h2>Bilanz</h2>
+            <div class="balance-sheet">
+                <div class="balance-column">
+                    <h3>Aktiva</h3>
+                    <div id="assets"></div>
+                </div>
+                <div class="balance-column">
+                    <h3>Passiva</h3>
+                    <div id="liabilities"></div>
+                    <h3>Eigenkapital</h3>
+                    <div id="equity"></div>
+                </div>
+            </div>
+            <div class="profit-loss">
+                <h3>Gewinn- und Verlustrechnung</h3>
+                <div id="profit-loss-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

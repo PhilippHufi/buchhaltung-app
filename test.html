@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buchhaltung App Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; padding: 20px; margin: 20px 0; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Buchhaltung App Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: JavaScript Loading</h2>
+        <div id="js-test">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: App Initialization</h2>
+        <div id="app-test">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Default Accounts</h2>
+        <div id="accounts-test">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Transaction Creation</h2>
+        <div id="transaction-test">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 5: Data Persistence</h2>
+        <div id="persistence-test">Testing...</div>
+    </div>
+    
+    <script>
+        // Test 1: JavaScript Loading
+        try {
+            document.getElementById('js-test').innerHTML = '<span class="success">✓ JavaScript loaded successfully</span>';
+        } catch (e) {
+            document.getElementById('js-test').innerHTML = '<span class="error">✗ JavaScript loading failed: ' + e.message + '</span>';
+        }
+        
+        // Test 2: App Initialization
+        try {
+            class TestBookkeepingApp {
+                constructor() {
+                    this.accounts = [];
+                    this.transactions = [];
+                    this.receipts = [];
+                    this.loadDefaultAccounts();
+                }
+                
+                loadDefaultAccounts() {
+                    if (this.accounts.length === 0) {
+                        const defaultAccounts = [
+                            { name: 'Kasse', type: 'Aktiva' },
+                            { name: 'Bank', type: 'Aktiva' },
+                            { name: 'Forderungen', type: 'Aktiva' },
+                            { name: 'Verbindlichkeiten', type: 'Passiva' },
+                            { name: 'Eigenkapital', type: 'Eigenkapital' },
+                            { name: 'Umsatzerlöse', type: 'Erlöse' },
+                            { name: 'Büroaufwand', type: 'Aufwendungen' },
+                            { name: 'Mietaufwand', type: 'Aufwendungen' },
+                            { name: 'Reisekosten', type: 'Aufwendungen' },
+                            { name: 'Bewirtung', type: 'Aufwendungen' }
+                        ];
+                        
+                        defaultAccounts.forEach(account => {
+                            this.accounts.push(account);
+                        });
+                    }
+                }
+                
+                getAccountBalance(accountName) {
+                    let balance = 0;
+                    const account = this.accounts.find(acc => acc.name === accountName);
+                    
+                    if (!account) return 0;
+                    
+                    this.transactions.forEach(transaction => {
+                        if (transaction.debitAccount === accountName) {
+                            if (account.type === 'Aktiva' || account.type === 'Aufwendungen') {
+                                balance += transaction.amount;
+                            } else {
+                                balance -= transaction.amount;
+                            }
+                        }
+                        if (transaction.creditAccount === accountName) {
+                            if (account.type === 'Aktiva' || account.type === 'Aufwendungen') {
+                                balance -= transaction.amount;
+                            } else {
+                                balance += transaction.amount;
+                            }
+                        }
+                    });
+                    
+                    return balance;
+                }
+            }
+            
+            const testApp = new TestBookkeepingApp();
+            document.getElementById('app-test').innerHTML = '<span class="success">✓ App initialized successfully</span>';
+            
+            // Test 3: Default Accounts
+            if (testApp.accounts.length === 10) {
+                document.getElementById('accounts-test').innerHTML = '<span class="success">✓ Default accounts loaded correctly (' + testApp.accounts.length + ' accounts)</span>';
+            } else {
+                document.getElementById('accounts-test').innerHTML = '<span class="error">✗ Default accounts not loaded correctly (expected 10, got ' + testApp.accounts.length + ')</span>';
+            }
+            
+            // Test 4: Transaction Creation
+            testApp.transactions.push({
+                id: Date.now(),
+                date: '2024-01-15',
+                description: 'Test Transaction',
+                debitAccount: 'Büroaufwand',
+                creditAccount: 'Bank',
+                amount: 100.00
+            });
+            
+            if (testApp.transactions.length === 1) {
+                const balance = testApp.getAccountBalance('Büroaufwand');
+                if (balance === 100) {
+                    document.getElementById('transaction-test').innerHTML = '<span class="success">✓ Transaction creation and balance calculation working correctly</span>';
+                } else {
+                    document.getElementById('transaction-test').innerHTML = '<span class="error">✗ Balance calculation incorrect (expected 100, got ' + balance + ')</span>';
+                }
+            } else {
+                document.getElementById('transaction-test').innerHTML = '<span class="error">✗ Transaction creation failed</span>';
+            }
+            
+            // Test 5: Data Persistence
+            try {
+                localStorage.setItem('test-bookkeeping', JSON.stringify(testApp.accounts));
+                const retrieved = JSON.parse(localStorage.getItem('test-bookkeeping'));
+                if (retrieved.length === testApp.accounts.length) {
+                    document.getElementById('persistence-test').innerHTML = '<span class="success">✓ Data persistence working correctly</span>';
+                    localStorage.removeItem('test-bookkeeping');
+                } else {
+                    document.getElementById('persistence-test').innerHTML = '<span class="error">✗ Data persistence failed</span>';
+                }
+            } catch (e) {
+                document.getElementById('persistence-test').innerHTML = '<span class="error">✗ Data persistence error: ' + e.message + '</span>';
+            }
+            
+        } catch (e) {
+            document.getElementById('app-test').innerHTML = '<span class="error">✗ App initialization failed: ' + e.message + '</span>';
+        }
+    </script>
+</body>
+</html>

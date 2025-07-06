@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>App Icons Generator</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192" style="border: 1px solid #ccc; margin: 10px;"></canvas>
+    <canvas id="canvas512" width="512" height="512" style="border: 1px solid #ccc; margin: 10px;"></canvas>
+    <br>
+    <button onclick="downloadIcons()">Icons herunterladen</button>
+    
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Calculator icon
+            ctx.fillStyle = '#ffffff';
+            
+            // Calculator body
+            const padding = size * 0.15;
+            const calcWidth = size - (padding * 2);
+            const calcHeight = size - (padding * 2);
+            
+            ctx.fillRect(padding, padding, calcWidth, calcHeight);
+            
+            // Calculator screen
+            ctx.fillStyle = '#2c3e50';
+            const screenPadding = size * 0.05;
+            ctx.fillRect(padding + screenPadding, padding + screenPadding, 
+                        calcWidth - (screenPadding * 2), calcHeight * 0.3);
+            
+            // Calculator buttons
+            ctx.fillStyle = '#ecf0f1';
+            const buttonSize = size * 0.08;
+            const buttonSpacing = size * 0.02;
+            const startX = padding + screenPadding;
+            const startY = padding + calcHeight * 0.4;
+            
+            // 4x4 button grid
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
+                    const x = startX + col * (buttonSize + buttonSpacing);
+                    const y = startY + row * (buttonSize + buttonSpacing);
+                    ctx.fillRect(x, y, buttonSize, buttonSize);
+                }
+            }
+            
+            // Euro symbol
+            ctx.fillStyle = '#f39c12';
+            ctx.font = `bold ${size * 0.2}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('€', padding + calcWidth * 0.8, padding + calcHeight * 0.25);
+        }
+        
+        function downloadIcons() {
+            createIcon('canvas192', 192);
+            createIcon('canvas512', 512);
+            
+            // Download 192x192 icon
+            const canvas192 = document.getElementById('canvas192');
+            const link192 = document.createElement('a');
+            link192.download = 'icon-192.png';
+            link192.href = canvas192.toDataURL();
+            link192.click();
+            
+            // Download 512x512 icon
+            setTimeout(() => {
+                const canvas512 = document.getElementById('canvas512');
+                const link512 = document.createElement('a');
+                link512.download = 'icon-512.png';
+                link512.href = canvas512.toDataURL();
+                link512.click();
+            }, 1000);
+        }
+        
+        // Create icons on page load
+        window.onload = function() {
+            createIcon('canvas192', 192);
+            createIcon('canvas512', 512);
+        };
+    </script>
+</body>
+</html>
