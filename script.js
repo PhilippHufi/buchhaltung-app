@@ -3,6 +3,7 @@ class BookkeepingApp {
         this.accounts = [];
         this.transactions = [];
         this.receipts = [];
+        this.currentReceiptType = 'kassenbon';
         this.init();
     }
 
@@ -59,7 +60,31 @@ class BookkeepingApp {
             this.createTransactionFromReceipt();
         });
 
+        // Receipt type selector
+        document.querySelectorAll('.receipt-type-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.receipt-type-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentReceiptType = e.target.dataset.type;
+                document.getElementById('receipt-label').textContent = 
+                    this.currentReceiptType === 'kassenbon' ? 
+                    'Kassenbon fotografieren oder hochladen:' : 
+                    'Rechnung fotografieren oder hochladen:';
+            });
+        });
+
+        // Calendar controls
+        document.getElementById('calendar-month').addEventListener('change', () => {
+            this.updateCalendarView();
+        });
+        
+        document.getElementById('calendar-filter').addEventListener('change', () => {
+            this.updateCalendarView();
+        });
+
+        // Set default date and month
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('calendar-month').value = new Date().toISOString().slice(0, 7);
     }
 
     addAccount() {
@@ -86,6 +111,7 @@ class BookkeepingApp {
         const debitAccount = document.getElementById('debit-account').value;
         const creditAccount = document.getElementById('credit-account').value;
         const amount = parseFloat(document.getElementById('amount').value);
+        const notes = document.getElementById('notes').value;
 
         if (debitAccount === creditAccount) {
             alert('Soll- und Haben-Konto müssen unterschiedlich sein!');
@@ -98,11 +124,14 @@ class BookkeepingApp {
             description,
             debitAccount,
             creditAccount,
-            amount
+            amount,
+            notes,
+            vendor: ''
         });
 
         this.renderTransactions();
         this.renderBalance();
+        this.updateCalendarView();
         this.saveData();
         
         document.getElementById('transaction-form').reset();
@@ -344,14 +373,16 @@ class BookkeepingApp {
 
     extractDataFromReceipt(imageData, file) {
         const extractedDataDiv = document.getElementById('extracted-data');
-        extractedDataDiv.innerHTML = '<div class="loading">Rechnung wird verarbeitet...</div>';
+        extractedDataDiv.innerHTML = '<div class="loading">Beleg wird verarbeitet...</div>';
 
         setTimeout(() => {
-            const mockData = this.simulateOCR(file.name);
+            const mockData = this.simulateOCR(file.name, this.currentReceiptType);
             
             extractedDataDiv.innerHTML = `
                 <h4>Extrahierte Daten</h4>
+                <p><strong>Typ:</strong> ${this.currentReceiptType === 'kassenbon' ? 'Kassenbon' : 'Rechnung'}</p>
                 <p><strong>Datum:</strong> ${mockData.date}</p>
+                <p><strong>Verkäufer:</strong> ${mockData.vendor}</p>
                 <p><strong>Beschreibung:</strong> ${mockData.description}</p>
                 <p><strong>Betrag:</strong> €${mockData.amount}</p>
                 <p><strong>Kategorie:</strong> ${mockData.category}</p>
@@ -361,6 +392,7 @@ class BookkeepingApp {
             document.getElementById('receipt-description').value = mockData.description;
             document.getElementById('receipt-amount').value = mockData.amount;
             document.getElementById('receipt-category').value = mockData.category;
+            document.getElementById('receipt-vendor').value = mockData.vendor;
             
             document.getElementById('receipt-transaction-form').style.display = 'block';
             
@@ -369,24 +401,34 @@ class BookkeepingApp {
                 imageData: imageData,
                 fileName: file.name,
                 extractedData: mockData,
+                receiptType: this.currentReceiptType,
                 processed: false
             };
         }, 2000);
     }
 
-    simulateOCR(fileName) {
+    simulateOCR(fileName, receiptType) {
         const today = new Date();
         const dateStr = today.toISOString().split('T')[0];
         
-        const mockData = [
-            { date: dateStr, description: 'Büromaterial - Staples', amount: '45.67', category: 'Büroaufwand' },
-            { date: dateStr, description: 'Tankstelle - Shell', amount: '89.32', category: 'Reisekosten' },
-            { date: dateStr, description: 'Restaurant - Geschäftsessen', amount: '125.50', category: 'Bewirtung' },
-            { date: dateStr, description: 'Büroausstattung - Schreibtisch', amount: '299.99', category: 'Büroaufwand' },
-            { date: dateStr, description: 'Internetrechnung - Telekom', amount: '59.99', category: 'Büroaufwand' }
+        const kassenbonData = [
+            { date: dateStr, vendor: 'REWE', description: 'Lebensmittel Einkauf', amount: '23.45', category: 'Büroaufwand' },
+            { date: dateStr, vendor: 'SHELL', description: 'Tankstelle', amount: '89.32', category: 'Reisekosten' },
+            { date: dateStr, vendor: 'MCDONALDS', description: 'Schnellimbiss', amount: '12.90', category: 'Bewirtung' },
+            { date: dateStr, vendor: 'ROSSMANN', description: 'Drogerie', amount: '15.67', category: 'Büroaufwand' },
+            { date: dateStr, vendor: 'EDEKA', description: 'Supermarkt', amount: '34.21', category: 'Büroaufwand' }
         ];
         
-        return mockData[Math.floor(Math.random() * mockData.length)];
+        const rechnungData = [
+            { date: dateStr, vendor: 'Staples Deutschland GmbH', description: 'Büromaterial Bestellung', amount: '145.67', category: 'Büroaufwand' },
+            { date: dateStr, vendor: 'Deutsche Telekom AG', description: 'Internetrechnung', amount: '59.99', category: 'Büroaufwand' },
+            { date: dateStr, vendor: 'Restaurant Adler', description: 'Geschäftsessen', amount: '125.50', category: 'Bewirtung' },
+            { date: dateStr, vendor: 'IKEA Deutschland GmbH', description: 'Büroausstattung', amount: '299.99', category: 'Büroaufwand' },
+            { date: dateStr, vendor: 'Aral Station', description: 'Tankrechnung', amount: '78.45', category: 'Reisekosten' }
+        ];
+        
+        const data = receiptType === 'kassenbon' ? kassenbonData : rechnungData;
+        return data[Math.floor(Math.random() * data.length)];
     }
 
     createTransactionFromReceipt() {
@@ -394,6 +436,8 @@ class BookkeepingApp {
         const description = document.getElementById('receipt-description').value;
         const amount = parseFloat(document.getElementById('receipt-amount').value);
         const category = document.getElementById('receipt-category').value;
+        const vendor = document.getElementById('receipt-vendor').value;
+        const notes = document.getElementById('receipt-notes').value;
 
         this.transactions.push({
             id: Date.now(),
@@ -401,7 +445,10 @@ class BookkeepingApp {
             description,
             debitAccount: category,
             creditAccount: 'Bank',
-            amount
+            amount,
+            vendor,
+            notes,
+            receiptType: this.currentReceiptType
         });
 
         this.currentReceiptData.processed = true;
@@ -411,13 +458,14 @@ class BookkeepingApp {
         this.renderTransactions();
         this.renderBalance();
         this.renderReceipts();
+        this.updateCalendarView();
         this.saveData();
 
         document.getElementById('receipt-form').reset();
         document.getElementById('receipt-preview').style.display = 'none';
         document.getElementById('receipt-transaction-form').style.display = 'none';
         
-        alert('Rechnung gespeichert und Transaktion erstellt!');
+        alert('Beleg gespeichert und Transaktion erstellt!');
     }
 
     renderReceipts() {
@@ -430,10 +478,11 @@ class BookkeepingApp {
             receiptItem.innerHTML = `
                 <img src="${receipt.imageData}" alt="${receipt.fileName}">
                 <h4>${receipt.extractedData.description}</h4>
+                <p><strong>${receipt.extractedData.vendor}</strong></p>
                 <p>${new Date(receipt.extractedData.date).toLocaleDateString('de-DE')}</p>
                 <p class="amount">€${receipt.extractedData.amount}</p>
                 <p>${receipt.extractedData.category}</p>
-                <p style="font-size: 12px; color: #999;">${receipt.fileName}</p>
+                <p style="font-size: 12px; color: #999;">${receipt.receiptType === 'kassenbon' ? 'Kassenbon' : 'Rechnung'}</p>
             `;
             gallery.appendChild(receiptItem);
         });
@@ -450,8 +499,88 @@ function showTab(tabName) {
     
     document.getElementById(tabName).classList.add('active');
     event.target.classList.add('active');
+    
+    // Update calendar view when calendar tab is shown
+    if (tabName === 'calendar' && window.bookkeepingApp) {
+        window.bookkeepingApp.updateCalendarView();
+    }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    new BookkeepingApp();
+    window.bookkeepingApp = new BookkeepingApp();
 });
+
+// Add updateCalendarView method to BookkeepingApp class
+BookkeepingApp.prototype.updateCalendarView = function() {
+    const selectedMonth = document.getElementById('calendar-month').value;
+    const selectedCategory = document.getElementById('calendar-filter').value;
+    
+    if (!selectedMonth) return;
+    
+    const [year, month] = selectedMonth.split('-');
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+    
+    // Filter transactions for the selected month
+    const monthTransactions = this.transactions.filter(transaction => {
+        const transactionDate = new Date(transaction.date);
+        return transactionDate >= startDate && transactionDate <= endDate &&
+               (!selectedCategory || transaction.debitAccount === selectedCategory);
+    });
+    
+    // Calculate totals
+    const totalExpenses = monthTransactions.reduce((sum, transaction) => {
+        const account = this.accounts.find(acc => acc.name === transaction.debitAccount);
+        return account && account.type === 'Aufwendungen' ? sum + transaction.amount : sum;
+    }, 0);
+    
+    const receiptCount = monthTransactions.length;
+    
+    // Update summary cards
+    document.getElementById('total-expenses').textContent = `${totalExpenses.toFixed(2)} €`;
+    document.getElementById('receipt-count').textContent = receiptCount;
+    
+    // Update transactions list
+    const transactionsList = document.getElementById('calendar-transactions-list');
+    transactionsList.innerHTML = '';
+    
+    if (monthTransactions.length === 0) {
+        transactionsList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Keine Transaktionen für diesen Zeitraum</p>';
+        return;
+    }
+    
+    monthTransactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(transaction => {
+        const transactionItem = document.createElement('div');
+        transactionItem.className = 'transaction-item';
+        transactionItem.innerHTML = `
+            <div class="transaction-info">
+                <div class="date">${new Date(transaction.date).toLocaleDateString('de-DE')}</div>
+                <div class="description">${transaction.description}</div>
+                ${transaction.vendor ? `<div class="vendor">${transaction.vendor}</div>` : ''}
+                ${transaction.notes ? `<div class="vendor">${transaction.notes}</div>` : ''}
+            </div>
+            <div class="transaction-amount">€${transaction.amount.toFixed(2)}</div>
+        `;
+        transactionsList.appendChild(transactionItem);
+    });
+};
+
+// Initialize calendar view on page load
+BookkeepingApp.prototype.initCalendar = function() {
+    // Set current month as default
+    const now = new Date();
+    const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    document.getElementById('calendar-month').value = currentMonth;
+    
+    // Update view after a short delay to ensure everything is loaded
+    setTimeout(() => {
+        this.updateCalendarView();
+    }, 100);
+};
+
+// Add to the existing init method
+BookkeepingApp.prototype.originalInit = BookkeepingApp.prototype.init;
+BookkeepingApp.prototype.init = function() {
+    this.originalInit();
+    this.initCalendar();
+};

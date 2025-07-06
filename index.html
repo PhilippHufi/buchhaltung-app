@@ -20,7 +20,8 @@
         
         <div class="tabs">
             <button class="tab-button active" onclick="showTab('transactions')">Transaktionen</button>
-            <button class="tab-button" onclick="showTab('receipts')">Rechnungen</button>
+            <button class="tab-button" onclick="showTab('receipts')">Belege</button>
+            <button class="tab-button" onclick="showTab('calendar')">Kalender</button>
             <button class="tab-button" onclick="showTab('accounts')">Konten</button>
             <button class="tab-button" onclick="showTab('balance')">Bilanz</button>
         </div>
@@ -35,6 +36,10 @@
                 <div class="form-group">
                     <label>Beschreibung:</label>
                     <input type="text" id="description" required>
+                </div>
+                <div class="form-group">
+                    <label>Notizen:</label>
+                    <textarea id="notes" rows="2" placeholder="Optionale Notizen zur Transaktion"></textarea>
                 </div>
                 <div class="form-group">
                     <label>Soll-Konto:</label>
@@ -72,13 +77,20 @@
         </div>
 
         <div id="receipts" class="tab-content">
-            <h2>Rechnung fotografieren</h2>
+            <h2>Beleg fotografieren</h2>
+            <div class="form-group">
+                <label>Beleg-Typ auswählen:</label>
+                <div class="receipt-type-selector">
+                    <button type="button" class="receipt-type-btn active" data-type="kassenbon">Kassenbon</button>
+                    <button type="button" class="receipt-type-btn" data-type="rechnung">Rechnung</button>
+                </div>
+            </div>
             <form id="receipt-form">
                 <div class="form-group">
-                    <label>Rechnung fotografieren oder hochladen:</label>
+                    <label id="receipt-label">Kassenbon fotografieren oder hochladen:</label>
                     <input type="file" id="receipt-image" accept="image/*" capture="camera" required>
                 </div>
-                <button type="submit">Rechnung verarbeiten</button>
+                <button type="submit">Beleg verarbeiten</button>
             </form>
             
             <div id="receipt-preview" style="display: none;">
@@ -97,6 +109,14 @@
                     <div class="form-group">
                         <label>Beschreibung:</label>
                         <input type="text" id="receipt-description" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Verkäufer/Händler:</label>
+                        <input type="text" id="receipt-vendor" placeholder="Wird automatisch erkannt">
+                    </div>
+                    <div class="form-group">
+                        <label>Notizen:</label>
+                        <textarea id="receipt-notes" rows="2" placeholder="Optionale Notizen zum Beleg"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Betrag (€):</label>
@@ -152,6 +172,41 @@
                 <tbody id="accounts-tbody">
                 </tbody>
             </table>
+        </div>
+
+        <div id="calendar" class="tab-content">
+            <h2>Monatsausgaben</h2>
+            <div class="calendar-controls">
+                <div class="form-group">
+                    <label>Monat/Jahr:</label>
+                    <input type="month" id="calendar-month" value="">
+                </div>
+                <div class="form-group">
+                    <label>Kategorie filtern:</label>
+                    <select id="calendar-filter">
+                        <option value="">Alle Kategorien</option>
+                        <option value="Büroaufwand">Büroaufwand</option>
+                        <option value="Mietaufwand">Mietaufwand</option>
+                        <option value="Reisekosten">Reisekosten</option>
+                        <option value="Bewirtung">Bewirtung</option>
+                        <option value="Sonstiges">Sonstiges</option>
+                    </select>
+                </div>
+            </div>
+            <div class="monthly-summary">
+                <div class="summary-card">
+                    <h3>Gesamtausgaben</h3>
+                    <div class="amount" id="total-expenses">0,00 €</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Anzahl Belege</h3>
+                    <div class="count" id="receipt-count">0</div>
+                </div>
+            </div>
+            <div class="calendar-transactions">
+                <h3>Transaktionen</h3>
+                <div id="calendar-transactions-list"></div>
+            </div>
         </div>
 
         <div id="balance" class="tab-content">
